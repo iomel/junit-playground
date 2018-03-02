@@ -164,7 +164,6 @@ public class UserRepository {
             }
         }
         return null;
-
     }
 
     public void delete(long id)
