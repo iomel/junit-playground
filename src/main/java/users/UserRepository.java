@@ -1,13 +1,16 @@
 package users;
 
+
+import users.exception.BadRequestException;
+import users.exception.InternalServerException;
+import users.exception.UserNotFoundException;
+
 public class UserRepository {
-    private User[] users;
+    private User[] users = new User[10];
 
     public UserRepository(User[] users) {
         this.users = users;
     }
-
-    //----- TASK 2 ---------------------
 
     public User[] getUsers() {
         return users;
@@ -15,164 +18,129 @@ public class UserRepository {
 
     public String[] getUserNames()
     {
-        if (users == null)
-            return null;
         int count = 0;
-        for(User user : users)
+        for(User user : getUsers())
             if(user != null)
                 count++;
 
         String[] nameList = new String[count];
         count = 0;
 
-        for(User user : users)
+        for(User user : getUsers())
             if(user != null) {
                 nameList[count] = user.getName();
                 count++;
             }
-
         return nameList;
     }
 
     public long[] getUserIds()
     {
-        if (users == null)
-            return null;
         int count = 0;
-        for(User user : users)
+        for(User user : getUsers())
             if(user != null)
                 count++;
 
         long[] idList = new long[count];
         count = 0;
 
-        for(User user : users)
+        for(User user : getUsers())
             if(user != null) {
                 idList[count] = user.getId();
                 count++;
             }
-
         return idList;
     }
 
     public String getUserNameById(long id)
     {
-        if (users == null)
-            return null;
-
-        for (User user : users)
+        for (User user : getUsers())
         {
             if (user == null)
                 continue;
             else if (user.getId() == id)
                 return user.getName();
-
         }
         return null;
     }
 
-    // task 3 methods
-
-    public User getUserByName(String name)
+    public User getUserByName(String name) throws BadRequestException
     {
-        if (users == null ||  name == null)
-            return null;
+        if ( name == null)
+            throw new BadRequestException("Can't get user with null name");
 
-        for(User user : users) {
-            if (user == null)
-                continue;
-            if (user.getName() == name)
+        for(User user : getUsers())
+            if (user != null && user.getName() == name)
                 return user;
-        }
         return null;
     }
 
-
-    public User getUserBySessionId(String sessionId)
+    public User getUserBySessionId(String sessionId) throws Exception
     {
-            if (users == null || sessionId == null)
-                return null;
+        if (sessionId == null)
+            throw new BadRequestException("Can't get user with null session id");
 
-            for (User user : users) {
-                if (user == null)
-                    continue;
-
-                if (user.getSessionId() == sessionId)
-                    return user;
-            }
-            return null;
-    }
-
-    // --------- Task 4 ----------
-
-    public User findById(long id)
-    {
-        if (users == null)
-            return null;
-
-        for(User user : users) {
-            if (user == null)
-                continue;
-
-            if (user.getId() == id)
+        for (User user : getUsers())
+            if (user != null && user.getSessionId() == sessionId)
                 return user;
-        }
-        return null;
+        throw new UserNotFoundException("User with session id: " + sessionId + " not found");
     }
 
-    public User save(User user)
+    public User findById(long id) throws UserNotFoundException {
+        System.out.println("CALL: findById ");
+        for(User user : getUsers())
+            if (user != null && user.getId() == id)
+                return user;
+        throw new UserNotFoundException("User with id: " + id + " not found");
+    }
+
+    public User save(User user) throws Exception
     {
-        if (users == null)
-            return null;
+        System.out.println("CALL: save ");
+
         if(user == null)
-            return null;
+            throw new BadRequestException("Can't save null user");
 
-        if (findById(user.getId()) != null)
-            return null;
-
-        for (int i = 0; i < users.length; i++)
+        try {
+            findById(user.getId());
+            throw new BadRequestException("User with id: " + user.getId() + " already exist");
+        } catch (UserNotFoundException e)
         {
-            if(users[i] == null) {
-                users[i] = user;
-                return users[i];
+            System.out.println("User with id: " + user.getId() + " not found. Will be saved");
+        }
+
+        for (int i = 0; i < getUsers().length; i++)
+        {
+            if(getUsers()[i] == null) {
+                getUsers()[i] = user;
+                return getUsers()[i];
             }
         }
-        return null;
+        throw new InternalServerException("Not enough space to save user with id:" + user.getId() );
     }
 
-    // ------ Task 5 -------
-
-    public User update(User user)
+    public User update(User user) throws Exception
     {
-        if (users == null)
-            return null;
         if(user == null)
-            return null;
+            throw new BadRequestException("Can't save null user");
 
-        if (findById(user.getId()) == null)
-            return null;
+        findById(user.getId());
 
-
-        for (int i = 0; i < users.length; i++)
-        {
-            if(users[i] != null) {
-                if(users[i].getId() == user.getId());
-                {
-                    users[i] = user;
-                    return users[i];
+        for (int i = 0; i < getUsers().length; i++)
+            if(getUsers()[i] != null && getUsers()[i].getId() == user.getId()) {
+                getUsers()[i] = user;
+                    return getUsers()[i];
                 }
-            }
-        }
-        return null;
+        throw new InternalServerException("Unexpected error");
     }
 
-    public void delete(long id)
+    public void delete(long id) throws Exception
     {
-        if(findById(id) != null)
-            for (int i = 0; i < users.length; i++)
-                if(users[i] != null)
-                    if(users[i].getId() == id)
-                        users[i] = null;
-
+        findById(id);
+        for (int i = 0; i < getUsers().length; i++)
+            if(getUsers()[i] != null && getUsers()[i].getId() == id) {
+                getUsers()[i] = null;
+                break;
+            }
     }
 }

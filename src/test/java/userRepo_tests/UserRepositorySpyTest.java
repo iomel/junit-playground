@@ -8,11 +8,11 @@ import users.exception.UserNotFoundException;
 
 import java.util.Arrays;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.mockito.Mockito.*;
-import static org.junit.Assert.assertEquals;
 
-public class UserRepositoryMockTest {
+public class UserRepositorySpyTest {
     private UserRepository uRepo;
 
     private User[] testUsersSet;
@@ -23,27 +23,24 @@ public class UserRepositoryMockTest {
         testUser = new User(1111, "Petya", "pppT");
         User[] users = {testUser, null, new User(1121, null, null), new User(3333, "Vasya", "pppV"), };
         testUsersSet = users;
-        uRepo = mock(UserRepository.class);
-   }
+        uRepo = spy(new UserRepository(testUsersSet));
+    }
 
     @Test
     public void UR_saveTest_RIGHT_USER() throws Exception {
         System.out.println("Mock of UserRepository class save method test with RIGHT USER");
         User newUser = new User(1199, "Piter", "gggPT");
 
-        // before test
-        when(uRepo.getUsers()).thenReturn(testUsersSet);
-        when(uRepo.findById(1199)).thenThrow(UserNotFoundException.class);
-        when(uRepo.save(any(User.class))).thenCallRealMethod();
+        //before test
         System.out.println(Arrays.toString(uRepo.getUsers()));
+        doThrow(UserNotFoundException.class).when(uRepo).findById(1199);
 
         // test
         assertEquals(newUser, uRepo.save(newUser));
 
-        // after test
+        //After test
         System.out.println(Arrays.toString(uRepo.getUsers()));
         assertArrayEquals(testUsersSet, uRepo.getUsers());
-
     }
 
 }

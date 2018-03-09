@@ -1,11 +1,12 @@
 package userRepo_tests;
 
-import static org.junit.Assert.*;
-
 import org.junit.Before;
 import org.junit.Test;
 import users.User;
 import users.UserRepository;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
 public class UserRepositoryTest {
     private UserRepository userRepository;
@@ -138,6 +139,7 @@ public class UserRepositoryTest {
     public void UR_saveTest_NULL_USER() throws Exception {
         System.out.println("UserRepository class save method test with USER USER");
         User result = null;
+        // Exception TODO
         assertEquals(result, userRepository.save(null));
     }
 

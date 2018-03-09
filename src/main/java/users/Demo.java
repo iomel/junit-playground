@@ -13,11 +13,6 @@ public class Demo {
         System.out.println(Arrays.toString(uR.getUserNames()));
         System.out.println(Arrays.toString(uR.getUserIds()));
 
-        uR.delete(1111);
-        System.out.println(Arrays.toString(uR.getUserNames()));
-
-        uR.delete(0);
-        System.out.println(Arrays.toString(uR.getUserNames()));
 
 
     }
